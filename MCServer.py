@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import sys
 
@@ -18,8 +19,8 @@ def start_server():
 
   server_command_args = [
     "java",
-    f"-Xms{server_ram["min"]}",
-    f"-Xmx{server_ram["max"]}",
+    f"-Xms{server_ram['min']}",
+    f"-Xmx{server_ram['max']}",
     "-jar",
     server_config["jarfile"]
   ]
@@ -38,7 +39,7 @@ def main():
     case "start":
       start_server()
     case "":
-      print("[ERROR]: No command were provided")
+      print("[ERROR]: No command was provided")
     case _:
       print(f"[ERROR]: Unknown command: {script_command}")
 
