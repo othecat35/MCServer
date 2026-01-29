@@ -1,4 +1,5 @@
 import os
+import sys
 
 config = {
   "server": {
@@ -30,7 +31,17 @@ def start_server():
   os.execvp("java", server_command_args)
 
 def main():
-  start_server()
+  script_cli_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
+  script_command = script_cli_args[0]
+
+  match script_command:
+    case "start":
+      start_server()
+    case "":
+      print("[ERROR]: No command were provided")
+    case _:
+      print(f"[ERROR]: Unknown command: {script_command}")
+
 
 if __name__ == "__main__":
   main()
