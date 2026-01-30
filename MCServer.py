@@ -15,34 +15,33 @@ config = {
 
 def start_server():
   server_config = config["server"]
-  server_ram = server_config["ram"]
+  ram_limit = server_config["ram"]
 
-  server_command_args = [
+  command_args = [
     "java",
-    f"-Xms{server_ram['min']}",
-    f"-Xmx{server_ram['max']}",
+    f"-Xms{ram_limit['min']}",
+    f"-Xmx{ram_limit['max']}",
     "-jar",
     server_config["jarfile"]
   ]
 
   if server_config["hide_gui"]:
-    server_command_args.append("nogui")
+    command_args.append("nogui")
 
-  print(f"[INFO]: Running command: {' '.join(server_command_args)}")
-  os.execvp("java", server_command_args)
+  print(f"[INFO]: Running command: {' '.join(command_args)}")
+  os.execvp("java", command_args)
 
 def main():
-  script_cli_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
-  script_command = script_cli_args[0]
+  cli_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
+  command = cli_args[0]
 
-  match script_command:
+  match command:
     case "start":
       start_server()
     case "":
       print("[ERROR]: No command was provided")
     case _:
-      print(f"[ERROR]: Unknown command: {script_command}")
-
+      print(f"[ERROR]: Unknown command: {command}")
 
 if __name__ == "__main__":
   main()
