@@ -4,17 +4,46 @@ import sys
 
 config = {
   "server": {
-    "jarfile": "Launcher.jar",
+    "jar_file": "Launcher.jar",
     "ram": {
       "min": "512M",
       "max": "2G"
     },
     "hide_gui": True
+  },
+  "script": {
+    "colored_output": True
   }
 }
 
+COLOR_CODES = {
+  "gray": "\033[90m",
+  "red": "\033[31m",
+  "reset": "\033[0m",
+}
+
+log_colors = {
+  "info": COLOR_CODES["gray"],
+  #"error": COLOR_CODES["red"] # error is special
+}
+
+is_terminal = [sys.stdout.isatty(), sys.stderr.isatty()]
 def logger(log_type, message):
-  print(f"[{log_type.upper()}]: {message}")
+  log_type = log_type.lower()
+
+  output_type = sys.stdout if log_type != "error" else sys.stderr
+
+  if config["script"]["colored_output"]:
+    if log_type == "error" and is_terminal[1]:
+        print(f"{COLOR_CODES['red']}[{log_type.upper()}]: \
+{COLOR_CODES['reset']}{message}", file=sys.stderr)
+        return
+    elif log_type in log_colors and is_terminal[0]:
+      print(f"{log_colors[log_type]}[{log_type.upper()}]: \
+{COLOR_CODES['reset']}{message}")
+      return
+
+  print(f"[{log_type.upper()}]: {message}", file=output_type)
 
 def start_server():
   server_config = config["server"]
@@ -25,7 +54,7 @@ def start_server():
     f"-Xms{ram_limit['min']}",
     f"-Xmx{ram_limit['max']}",
     "-jar",
-    server_config["jarfile"]
+    server_config["jar_file"]
   ]
 
   if server_config["hide_gui"]:
