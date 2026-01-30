@@ -13,6 +13,9 @@ config = {
   }
 }
 
+def logger(log_type, message):
+  print(f"[{log_type.upper()}]: {message}")
+
 def start_server():
   server_config = config["server"]
   ram_limit = server_config["ram"]
@@ -28,7 +31,7 @@ def start_server():
   if server_config["hide_gui"]:
     command_args.append("nogui")
 
-  print(f"[INFO]: Running command: {' '.join(command_args)}")
+  logger("info", f"Running command: {' '.join(command_args)}")
   os.execvp("java", command_args)
 
 def main():
@@ -39,9 +42,9 @@ def main():
     case "start":
       start_server()
     case "":
-      print("[ERROR]: No command was provided")
+      logger("error", "No command was provided")
     case _:
-      print(f"[ERROR]: Unknown command: {command}")
+      logger("error", f"Unknown command: {command}")
 
 if __name__ == "__main__":
   main()
