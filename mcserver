@@ -1,51 +1,24 @@
 #!/usr/bin/env python3
+import logging
 import os
 import sys
 
+logger = logging.getLogger("mcserver")
+
 config = {
   "server": {
-    "jar_file": "Launcher.jar",
+    "jarfile": "Launcher.jar",
     "ram": {
       "min": "512M",
       "max": "2G"
     },
     "hide_gui": True
-  },
-  "script": {
-    "colored_output": True
   }
 }
 
-COLOR_CODES = {
-  "gray": "\033[90m",
-  "red": "\033[31m",
-  "reset": "\033[0m",
-}
-
-log_colors = {
-  "info": COLOR_CODES["gray"],
-  #"error": COLOR_CODES["red"] # error is special
-}
-
-is_terminal = [sys.stdout.isatty(), sys.stderr.isatty()]
-def logger(log_type, message):
-  log_type = log_type.lower()
-
-  output_type = sys.stdout if log_type != "error" else sys.stderr
-
-  if config["script"]["colored_output"]:
-    if log_type == "error" and is_terminal[1]:
-        print(f"{COLOR_CODES['red']}[{log_type.upper()}]: \
-{COLOR_CODES['reset']}{message}", file=sys.stderr)
-        return
-    elif log_type in log_colors and is_terminal[0]:
-      print(f"{log_colors[log_type]}[{log_type.upper()}]: \
-{COLOR_CODES['reset']}{message}")
-      return
-
-  print(f"[{log_type.upper()}]: {message}", file=output_type)
-
 def start_server():
+  log = logger.getChild("server.start")
+
   server_config = config["server"]
   ram_limit = server_config["ram"]
 
@@ -54,16 +27,21 @@ def start_server():
     f"-Xms{ram_limit['min']}",
     f"-Xmx{ram_limit['max']}",
     "-jar",
-    server_config["jar_file"]
+    server_config["jarfile"]
   ]
 
   if server_config["hide_gui"]:
     command_args.append("nogui")
 
-  logger("info", f"Running command: {' '.join(command_args)}")
+  log.debug(f"Running command: {' '.join(command_args)}")
   os.execvp("java", command_args)
 
 def main():
+  logging.basicConfig(
+    level=logging.INFO,
+    format="[%(name)s/%(levelname)s]: %(message)s"
+  )
+
   cli_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
   command = cli_args[0]
 
@@ -71,9 +49,9 @@ def main():
     case "start":
       start_server()
     case "":
-      logger("error", "No command was provided")
+      logger.error("No command was provided")
     case _:
-      logger("error", f"Unknown command: {command}")
+      logger.error(f"Unknown command: {command}")
 
 if __name__ == "__main__":
   main()
