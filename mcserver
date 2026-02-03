@@ -21,22 +21,26 @@ default_configs = {
 
 def generate_config(config_name):
   config_filename = f"{config_name.lower()}.json"
-
   configs_dir = pathlib.Path(cwd) / ".mcserver" / "configs"
+
   config_path = configs_dir / config_filename
+  relative_config_path = os.path.relpath(config_path, cwd)
 
   log = logger.getChild("config.generate")
 
   try:
-    with open(config_path, mode="w") as config_file:
+    with open(config_path, mode="xt") as config_file:
       config_content = json.dumps(
         default_configs[config_name],
         indent=2
       )
 
       config_file.write(config_content)
-  except Exception as error:
-    log.error(f"Generic error handler: {error}")
+  except FileExistsError:
+    log.error(f"Cannot create configuration file {relative_config_path}, file already exists!")
+  except IsADirectoryError:
+    log.error(f"Cannot create configuration file {relative_config_path}, is a directory!")
+    sys.exit(1)
 
 def load_config(config_name):
   config_filename = f"{config_name.lower()}.json"
@@ -48,21 +52,19 @@ def load_config(config_name):
   log = logger.getChild("config.load")
 
   try:
-    with open(config_path) as config_file:
+    with open(config_path, mode="rt") as config_file:
       return json.load(config_file)
-  except FileNotFoundError:
-    log.error(f"Configuration file {config_filename} does not exist!")
-    log.info("Generating configuration file...")
-    generate_config(config_name)
-    sys.exit(1)
   except json.JSONDecodeError as error:
-    log.error(f"Failed to parse configuration file ({relative_config_path}): {error.msg} at line {error.lineno} column {error.colno}")
+    log.error(f"Failed to parse configuration file {relative_config_path}, {error.msg.lower()} at line {error.lineno} column {error.colno}!")
+    sys.exit(1)
+  except FileNotFoundError:
+    log.error(f"Cannot read configuration file {relative_config_path}, file does not exist!")
     sys.exit(1)
   except PermissionError:
-    logger.error(f"Failed to read configuration file ({relative_config_path}): Not enough permission!")
+    log.error(f"Cannot read configuration file {relative_config_path}, not enough permission!")
     sys.exit(1)
   except IsADirectoryError:
-    logger.error(f"Failed to read configuration file ({relative_config_path}): Is a directory!")
+    log.error(f"Cannot read configuration file {relative_config_path}, is a directory!")
     sys.exit(1)
 
 def start_server():
