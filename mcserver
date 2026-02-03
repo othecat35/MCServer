@@ -88,8 +88,9 @@ def start_server():
   os.execvp("java", command_args)
 
 def main():
+  logging_level = logging.DEBUG if os.getenv("MCSERVER_DEBUG") == "1" else logging.INFO
   logging.basicConfig(
-    level=logging.INFO,
+    level=logging_level,
     format="[%(name)s/%(levelname)s]: %(message)s"
   )
 
