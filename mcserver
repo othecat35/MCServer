@@ -38,6 +38,7 @@ def generate_config(config_name):
       config_file.write(config_content)
   except FileExistsError:
     log.error(f"Cannot create configuration file {relative_config_path}, file already exists!")
+    sys.exit(1)
   except IsADirectoryError:
     log.error(f"Cannot create configuration file {relative_config_path}, is a directory!")
     sys.exit(1)
@@ -89,6 +90,7 @@ def start_server():
 
 def main():
   logging_level = logging.DEBUG if os.getenv("MCSERVER_DEBUG") == "1" else logging.INFO
+
   logging.basicConfig(
     level=logging_level,
     format="[%(name)s/%(levelname)s]: %(message)s"
