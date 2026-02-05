@@ -19,6 +19,9 @@ default_configs = {
   }
 }
 
+def check_directory():
+  pass
+
 def generate_config(config_name):
   config_filename = f"{config_name.lower()}.json"
   configs_dir = pathlib.Path(cwd) / ".mcserver" / "configs"
