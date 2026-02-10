@@ -15,15 +15,9 @@ default_configs = {
       "min": "512M",
       "max": "2G"
     },
-    "version": "1.21.11",
-    "software": "vanilla",
-    "software_version": "",
     "hide_gui": True
   }
 }
-
-def check_directory():
-  pass
 
 def generate_config(config_name):
   config_filename = f"{config_name.lower()}.json"
@@ -101,8 +95,6 @@ def main():
     level=logging_level,
     format="[%(name)s/%(levelname)s]: %(message)s"
   )
-
-  log = logger.getChild("mcserver")
 
   cli_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
   command = cli_args[0]
