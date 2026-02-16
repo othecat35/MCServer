@@ -23,9 +23,15 @@ default_configs = {
 
 logger = logging.getLogger("mcserver")
 
-def generate_config(config_name):
-  config_filename = f"{config_name}.json"
+def check_mcserver_dir():
+  if not mcserver_path.is_dir():
+    logger.error("This command cannot be run without the '.mcserver' directory")
+    sys.exit(1)
 
+def generate_config(config_name):
+  check_mcserver_dir()
+
+  config_filename = f"{config_name}.json"
   config_path = configs_dir / config_filename
   relative_config_path = os.path.relpath(config_path, current_dir)
 
@@ -49,6 +55,9 @@ def generate_config(config_name):
         config_file,
         indent=2
       )
+  except FileNotFoundError:
+    log.error(f"Cannot create configuration file '{relative_config_path}': path does not exists")
+    sys.exit(1)
   except FileExistsError:
     log.error(f"Cannot create configuration file '{relative_config_path}': file already exists")
     sys.exit(1)
@@ -60,8 +69,9 @@ def generate_config(config_name):
     sys.exit(1)
 
 def load_config(config_name):
-  config_filename = f"{config_name}.json"
+  check_mcserver_dir()
 
+  config_filename = f"{config_name}.json"
   config_path = configs_dir / config_filename
   relative_config_path = os.path.relpath(config_path, current_dir)
 
@@ -85,6 +95,10 @@ def load_config(config_name):
   except Exception as error:
     log.error(f"Failed to load configuration for {config_name}: {error}")
     sys.exit(1)
+
+def initialize_setup():
+  os.makedirs(configs_dir, exist_ok=True)
+  generate_config("server")
 
 def start_server():
   log = logger.getChild("server.start")
@@ -118,6 +132,8 @@ def main():
   command = cli_args[0]
 
   match command:
+    case "init":
+      initialize_setup()
     case "start":
       start_server()
     case "":
