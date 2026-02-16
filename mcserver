@@ -5,8 +5,10 @@ import os
 import pathlib
 import sys
 
-logger = logging.getLogger("mcserver")
-cwd = os.getcwd()
+current_dir = os.getcwd()
+
+mcserver_path = pathlib.Path(current_dir) / ".mcserver"
+configs_dir = mcserver_path / "configs"
 
 default_configs = {
   "server": {
@@ -19,53 +21,60 @@ default_configs = {
   }
 }
 
+logger = logging.getLogger("mcserver")
+
 def generate_config(config_name):
-  config_filename = f"{config_name.lower()}.json"
-  configs_dir = pathlib.Path(cwd) / ".mcserver" / "configs"
+  config_filename = f"{config_name}.json"
 
   config_path = configs_dir / config_filename
-  relative_config_path = os.path.relpath(config_path, cwd)
+  relative_config_path = os.path.relpath(config_path, current_dir)
 
-  log = logger.getChild("config.generate")
+  log = logger.getChild("config.generator")
+
+  config_data = {}
+
+  try:
+    config_data = default_configs[config_name]
+  except KeyError:
+    log.error(f"Cannot generate configuration for {config_name}: no default configuration")
+    sys.exit(1)
 
   try:
     with open(config_path, mode="xt") as config_file:
-      config_content = json.dumps(
-        default_configs[config_name],
+      json.dump(
+        config_data,
+        config_file,
         indent=2
       )
-
-      config_file.write(config_content)
   except FileExistsError:
-    log.error(f"Cannot generate configuration file {relative_config_path}, file already exists!")
+    log.error(f"Cannot create configuration file '{relative_config_path}': file already exists")
     sys.exit(1)
   except IsADirectoryError:
-    log.error(f"Cannot generate configuration file {relative_config_path}, already exists as a directory!")
+    log.error(f"Cannot create configuration file '{relative_config_path}': path is a directory")
     sys.exit(1)
 
 def load_config(config_name):
-  config_filename = f"{config_name.lower()}.json"
-  configs_dir = pathlib.Path(cwd) / ".mcserver" / "configs"
+  config_filename = f"{config_name}.json"
 
   config_path = configs_dir / config_filename
-  relative_config_path = os.path.relpath(config_path, cwd)
+  relative_config_path = os.path.relpath(config_path, current_dir)
 
-  log = logger.getChild("config.load")
+  log = logger.getChild("config.loader")
 
   try:
     with open(config_path, mode="rt") as config_file:
       return json.load(config_file)
   except json.JSONDecodeError as error:
-    log.error(f"Failed to parse configuration file {relative_config_path}, {error.msg.lower()} at line {error.lineno} column {error.colno}!")
+    log.error(f"Failed to parse configuration file '{relative_config_path}': {error.msg.lower()} at line {error.lineno} column {error.colno}")
     sys.exit(1)
   except FileNotFoundError:
-    log.error(f"Cannot read configuration file {relative_config_path}, file does not exist!")
+    log.error(f"Cannot load configuration file '{relative_config_path}': file does not exist")
     sys.exit(1)
   except PermissionError:
-    log.error(f"Cannot read configuration file {relative_config_path}, not enough permission!")
+    log.error(f"Cannot read configuration file '{relative_config_path}': permission denied")
     sys.exit(1)
   except IsADirectoryError:
-    log.error(f"Cannot read configuration file {relative_config_path}, is a directory!")
+    log.error(f"Cannot read configuration file '{relative_config_path}': path is a directory")
     sys.exit(1)
 
 def start_server():
