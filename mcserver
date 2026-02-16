@@ -36,7 +36,10 @@ def generate_config(config_name):
   try:
     config_data = default_configs[config_name]
   except KeyError:
-    log.error(f"Cannot generate configuration for {config_name}: no default configuration")
+    log.error(f"Cannot generate configuration file for {config_name}: no default configuration available")
+    sys.exit(1)
+  except Exception as error:
+    log.error(f"Failed to get default configuration for {config_name}: {error}")
     sys.exit(1)
 
   try:
@@ -51,6 +54,9 @@ def generate_config(config_name):
     sys.exit(1)
   except IsADirectoryError:
     log.error(f"Cannot create configuration file '{relative_config_path}': path is a directory")
+    sys.exit(1)
+  except Exception as error:
+    log.error(f"Failed to create the configuration file for {config_name}: {error}")
     sys.exit(1)
 
 def load_config(config_name):
@@ -75,6 +81,9 @@ def load_config(config_name):
     sys.exit(1)
   except IsADirectoryError:
     log.error(f"Cannot read configuration file '{relative_config_path}': path is a directory")
+    sys.exit(1)
+  except Exception as error:
+    log.error(f"Failed to load configuration for {config_name}: {error}")
     sys.exit(1)
 
 def start_server():
