@@ -1,0 +1,3 @@
+A file where I dumped ideas for this project:
+- Add mod search command with Modrinth
+- Rename "ram" to "memory"?
