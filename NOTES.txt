@@ -10,3 +10,4 @@ Mod Management:
 
 Miscellaneous
 - Rename "ram" to "memory"?
+- Shrink the project scope first

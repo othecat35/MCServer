@@ -5,13 +5,10 @@ import os
 import pathlib
 import sys
 
-current_dir = os.getcwd()
+current_dir = pathlib.Path.cwd()
 
-script_name = "mcserver"
-script_dirname = f".{script_name}"
-
-script_dir_path = pathlib.Path(current_dir) / script_dirname
-configs_dir = script_dir_path / "configs"
+mcserver_path = current_dir / ".mcserver"
+configs_dir = mcserver_path / "configs"
 
 default_configs = {
   "server": {
@@ -25,28 +22,12 @@ default_configs = {
 }
 
 # Setup logger
-logger = logging.getLogger(script_name)
+logger = logging.getLogger("mcserver")
 
 # Check directory functions
 def ensure_dir_initialized():
-  if not script_dir_path.exists():
-    raise FileNotFoundError(f"Not a MCServer-managed directory, {script_dirname} does not exist")
-  if not script_dir_path.is_dir():
-    raise NotADirectoryError(f"'{script_dirname}' must be a directory")
-
-def check_dir_empty(dir_path):
-  dir_path = pathlib.Path(dir_path)
-
-  if not dir_path.is_dir():
-    raise NotADirectoryError("Cannot check directory empty on non-directory")
-
-  is_empty = True
-  for item in os.scandir(dir_path):
-    if not item.name == os.path.basename(sys.argv[0]):
-      is_empty =  False
-      break
-
-  return is_empty
+  if not mcserver_path.exists():
+    raise FileNotFoundError("Directory '.mcserver' not found, is directory not initialized?")
 
 # Configuration fuctions
 def generate_config(config_name):
@@ -55,27 +36,12 @@ def generate_config(config_name):
   relative_config_path = os.path.relpath(config_path, current_dir)
 
   try:
-    config_data = default_configs[config_name]
-  except KeyError:
-    raise KeyError(f"Cannot generate configuration file for {config_name}: no default configuration available")
-
-  except Exception as error:
-    raise Exception(f"Failed to get default configuration for {config_name}: {error.lower()}")
-
-  try:
     with open(config_path, mode="xt") as config_file:
       json.dump(
-        config_data, config_file,
+        default_configs[config_name],
+        config_file,
         indent=2
       )
-  except FileNotFoundError:
-    raise FileNotFoundError(f"Cannot create configuration file '{relative_config_path}': configuration path does not exists")
-
-  except FileExistsError:
-    raise FileExistsError(f"Cannot create configuration file '{relative_config_path}': file already exists")
-  except IsADirectoryError:
-    raise IsADirectoryError(f"Cannot create configuration file '{relative_config_path}': path is a directory")
-
   except Exception as error:
     raise Exception(f"Failed to create configuration file for {config_name}: {error}")
 
@@ -87,34 +53,20 @@ def load_config(config_name):
   try:
     with open(config_path, mode="rt") as config_file:
       return json.load(config_file)
-  except json.JSONDecodeError as error:
-    raise ValueError(f"Failed to parse configuration for {config_name}: {error.msg.lower()} at line {error.lineno} column {error.colno}")
-
-  except FileNotFoundError:
-    raise FileNotFoundError(f"Cannot read configuration file '{relative_config_path}': file does not exist")
-
-  except PermissionError:
-    raise PermissionError(f"Cannot read configuration file '{relative_config_path}': not enough permission")
-  except IsADirectoryError:
-    raise IsADirectoryError(f"Cannot read configuration file '{relative_config_path}': path is a directory")
-
   except Exception as error:
     raise Exception(f"Failed to load configuration for {config_name}: {error}")
 
 # Command functions
 def initialize_directory():
-  if not check_dir_empty(current_dir):
-    answer = input("The current directory is not empty, continue anyway? [y/N] ")
-    if not answer.lower() == "y":
-      log.warning("Command cancelled.")
-      sys.exit(1)
+  pathlib.Path.mkdir(mcserver_path, exist_ok=True)
 
-  os.makedirs(configs_dir, exist_ok=True)
+  pathlib.Path.mkdir(configs_dir, exist_ok=True)
   generate_config("server")
+
   logger.info("Directory initialized")
 
 def start_server():
-  is_dir_initialized()
+  ensure_dir_initialized()
 
   server_config = load_config("server")
   memory_limit = server_config["ram"]
