@@ -1,3 +1,12 @@
-A file where I dumped ideas for this project:
+A file where I dumped ideas for this project.
+
+CLI Commands:
+- Add `init` and `install`
+  `init` is used initialize the ".mcserver" directory and its configurations.
+  And `install` is used to install and setup the Minecraft server with the configuration inside ".mcserver".
+
+Mod Management:
 - Add mod search command with Modrinth
+
+Miscellaneous
 - Rename "ram" to "memory"?

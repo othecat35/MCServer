@@ -1,8 +1,0 @@
-{
-  "jarfile": "Launcher.jar",
-  "ram": {
-    "min": "512M",
-    "max": "2G"
-  },
-  "hide_gui": true
-}
