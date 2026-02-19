@@ -24,41 +24,32 @@ default_configs = {
   }
 }
 
+# Setup logger
 logger = logging.getLogger(script_name)
 
 # Check directory functions
+def ensure_dir_initialized():
+  if not script_dir_path.exists():
+    raise FileNotFoundError(f"Not a MCServer-managed directory, {script_dirname} does not exist")
+  if not script_dir_path.is_dir():
+    raise NotADirectoryError(f"'{script_dirname}' must be a directory")
+
 def check_dir_empty(dir_path):
   dir_path = pathlib.Path(dir_path)
 
   if not dir_path.is_dir():
-    raise NotADirectoryError("Cannot check on non-directory")
+    raise NotADirectoryError("Cannot check directory empty on non-directory")
 
   is_empty = True
-  for _ in os.scandir(dir_target):
-    is_empty =  False
-    break
+  for item in os.scandir(dir_path):
+    if not item.name == os.path.basename(sys.argv[0]):
+      is_empty =  False
+      break
 
   return is_empty
 
-def check_script_dir():
-  if not os.path.exists(script_path):
-    raise FileNotFoundError(f"'{script_dirname}' does not exists")
-  if not mcserver_path.is_dir():
-    raise NotADirectoryError(f"'{script_dirname}' is not a directory")
-
 # Configuration fuctions
 def generate_config(config_name):
-  log = logger.getChild("config.generator")
-
-  try:
-    check_script_dir()
-  except FileNotFoundError as error:
-    log.error(error.message)
-    sys.exit(1)
-  except NotADirectoryError as error:
-    log.error(error.message)
-    sys.exit(1)
-
   config_filename = f"{config_name}.json"
   config_path = configs_dir / config_filename
   relative_config_path = os.path.relpath(config_path, current_dir)
@@ -66,44 +57,29 @@ def generate_config(config_name):
   try:
     config_data = default_configs[config_name]
   except KeyError:
-    log.error(f"Cannot generate configuration file for {config_name}: no default configuration available")
-    sys.exit(1)
+    raise KeyError(f"Cannot generate configuration file for {config_name}: no default configuration available")
+
   except Exception as error:
-    log.error(f"Failed to get default configuration for {config_name}: {error}")
-    sys.exit(1)
+    raise Exception(f"Failed to get default configuration for {config_name}: {error.lower()}")
 
   try:
     with open(config_path, mode="xt") as config_file:
       json.dump(
-        config_data,
-        config_file,
+        config_data, config_file,
         indent=2
       )
   except FileNotFoundError:
-    log.error(f"Cannot create configuration file '{relative_config_path}': path does not exists")
-    sys.exit(1)
+    raise FileNotFoundError(f"Cannot create configuration file '{relative_config_path}': configuration path does not exists")
+
   except FileExistsError:
-    log.error(f"Cannot create configuration file '{relative_config_path}': file already exists")
-    sys.exit(1)
+    raise FileExistsError(f"Cannot create configuration file '{relative_config_path}': file already exists")
   except IsADirectoryError:
-    log.error(f"Cannot create configuration file '{relative_config_path}': path is a directory")
-    sys.exit(1)
+    raise IsADirectoryError(f"Cannot create configuration file '{relative_config_path}': path is a directory")
+
   except Exception as error:
-    log.error(f"Failed to create the configuration file for {config_name}: {error}")
-    sys.exit(1)
+    raise Exception(f"Failed to create configuration file for {config_name}: {error}")
 
 def load_config(config_name):
-  log = logger.getChild("config.loader")
-
-  try:
-    check_script_dir()
-  except FileNotFoundError as error:
-    log.error(error.message)
-    sys.exit(1)
-  except NotADirectoryError as error:
-    log.error(error.message)
-    sys.exit(1)
-
   config_filename = f"{config_name}.json"
   config_path = configs_dir / config_filename
   relative_config_path = os.path.relpath(config_path, current_dir)
@@ -112,61 +88,35 @@ def load_config(config_name):
     with open(config_path, mode="rt") as config_file:
       return json.load(config_file)
   except json.JSONDecodeError as error:
-    log.error(f"Failed to parse configuration file '{relative_config_path}': {error.msg.lower()} at line {error.lineno} column {error.colno}")
-    sys.exit(1)
+    raise ValueError(f"Failed to parse configuration for {config_name}: {error.msg.lower()} at line {error.lineno} column {error.colno}")
+
   except FileNotFoundError:
-    log.error(f"Cannot load configuration file '{relative_config_path}': file does not exist")
-    sys.exit(1)
+    raise FileNotFoundError(f"Cannot read configuration file '{relative_config_path}': file does not exist")
+
   except PermissionError:
-    log.error(f"Cannot read configuration file '{relative_config_path}': permission denied")
-    sys.exit(1)
+    raise PermissionError(f"Cannot read configuration file '{relative_config_path}': not enough permission")
   except IsADirectoryError:
-    log.error(f"Cannot read configuration file '{relative_config_path}': path is a directory")
-    sys.exit(1)
+    raise IsADirectoryError(f"Cannot read configuration file '{relative_config_path}': path is a directory")
+
   except Exception as error:
-    log.error(f"Failed to load configuration for {config_name}: {error}")
-    sys.exit(1)
+    raise Exception(f"Failed to load configuration for {config_name}: {error}")
 
-# 
-def initialize_setup():
-  log = logger.getChild("script.init")
-
-  try:
-    check_script_dir()
-    log.error(f"'{script_dirname}' is already exists, not reinitializing")
-  except NotADirectoryError:
-    log.error(f"'{script_dirname}' is not a directory, not initializing")
-  except FileNotFoundError:
-    pass
-
+# Command functions
+def initialize_directory():
   if not check_dir_empty(current_dir):
     answer = input("The current directory is not empty, continue anyway? [y/N] ")
     if not answer.lower() == "y":
-      logger.warn("Command cancelled.")
+      log.warning("Command cancelled.")
       sys.exit(1)
 
   os.makedirs(configs_dir, exist_ok=True)
   generate_config("server")
+  logger.info("Directory initialized")
 
 def start_server():
-  log = logger.getChild("server.start")
+  is_dir_initialized()
 
-  try:
-    check_script_dir()
-  except FileNotFoundError as error:
-    log.error(error.message)
-    sys.exit(1)
-  except NotADirectoryError as error:
-    log.error(error.message)
-    sys.exit(1)
-
-  try:
-    server_config = load_config("server")
-  except FileNotFoundError:
-    log.error(f"'{script_dirname}' does not exist, cannot read configuration")
-  except NotADirectoryError:
-    log.error(f"'{script_dirname}' is not a directory, can't read configuration")
-
+  server_config = load_config("server")
   memory_limit = server_config["ram"]
 
   command_args = [
@@ -180,29 +130,31 @@ def start_server():
   if server_config["hide_gui"]:
     command_args.append("nogui")
 
-  log.debug(f"Running command: {' '.join(command_args)}")
+  logger.debug(f"Running command: {' '.join(command_args)}")
   os.execvp("java", command_args)
 
 def main():
-  logging_level = logging.DEBUG if os.getenv("MCSERVER_DEBUG") == "1" else logging.INFO
-
   logging.basicConfig(
-    level=logging_level,
-    format="[%(name)s/%(levelname)s]: %(message)s"
+    level=logging.INFO,
+    format="[%(levelname)s]: %(message)s"
   )
 
   cli_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
   command = cli_args[0]
 
-  match command:
-    case "init":
-      initialize_setup()
-    case "start":
-      start_server()
-    case "":
-      logger.error("No command was provided")
-    case _:
-      logger.error(f"Unknown command: {command}")
+  try:
+    match command:
+      case "init":
+        initialize_directory()
+      case "start":
+        start_server()
+      case "":
+        raise Exception("No command was provided")
+      case _:
+        raise Exception(f"Unknown command: {command}")
+  except Exception as error:
+    logger.error(error)
+    sys.exit(1)
 
 if __name__ == "__main__":
   main()
