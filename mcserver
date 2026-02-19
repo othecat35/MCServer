@@ -7,8 +7,11 @@ import sys
 
 current_dir = os.getcwd()
 
-mcserver_path = pathlib.Path(current_dir) / ".mcserver"
-configs_dir = mcserver_path / "configs"
+script_name = "mcserver"
+script_dirname = f".{script_name}"
+
+script_dir_path = pathlib.Path(current_dir) / script_dirname
+configs_dir = script_dir_path / "configs"
 
 default_configs = {
   "server": {
@@ -21,23 +24,44 @@ default_configs = {
   }
 }
 
-logger = logging.getLogger("mcserver")
+logger = logging.getLogger(script_name)
 
-def check_mcserver_dir():
+# Check directory functions
+def check_dir_empty(dir_path):
+  dir_path = pathlib.Path(dir_path)
+
+  if not dir_path.is_dir():
+    raise NotADirectoryError("Cannot check on non-directory")
+
+  is_empty = True
+  for _ in os.scandir(dir_target):
+    is_empty =  False
+    break
+
+  return is_empty
+
+def check_script_dir():
+  if not os.path.exists(script_path):
+    raise FileNotFoundError(f"'{script_dirname}' does not exists")
   if not mcserver_path.is_dir():
-    logger.error("This command cannot be run without the '.mcserver' directory")
-    sys.exit(1)
+    raise NotADirectoryError(f"'{script_dirname}' is not a directory")
 
+# Configuration fuctions
 def generate_config(config_name):
-  check_mcserver_dir()
+  log = logger.getChild("config.generator")
+
+  try:
+    check_script_dir()
+  except FileNotFoundError as error:
+    log.error(error.message)
+    sys.exit(1)
+  except NotADirectoryError as error:
+    log.error(error.message)
+    sys.exit(1)
 
   config_filename = f"{config_name}.json"
   config_path = configs_dir / config_filename
   relative_config_path = os.path.relpath(config_path, current_dir)
-
-  log = logger.getChild("config.generator")
-
-  config_data = {}
 
   try:
     config_data = default_configs[config_name]
@@ -69,13 +93,20 @@ def generate_config(config_name):
     sys.exit(1)
 
 def load_config(config_name):
-  check_mcserver_dir()
+  log = logger.getChild("config.loader")
+
+  try:
+    check_script_dir()
+  except FileNotFoundError as error:
+    log.error(error.message)
+    sys.exit(1)
+  except NotADirectoryError as error:
+    log.error(error.message)
+    sys.exit(1)
 
   config_filename = f"{config_name}.json"
   config_path = configs_dir / config_filename
   relative_config_path = os.path.relpath(config_path, current_dir)
-
-  log = logger.getChild("config.loader")
 
   try:
     with open(config_path, mode="rt") as config_file:
@@ -96,20 +127,52 @@ def load_config(config_name):
     log.error(f"Failed to load configuration for {config_name}: {error}")
     sys.exit(1)
 
+# 
 def initialize_setup():
+  log = logger.getChild("script.init")
+
+  try:
+    check_script_dir()
+    log.error(f"'{script_dirname}' is already exists, not reinitializing")
+  except NotADirectoryError:
+    log.error(f"'{script_dirname}' is not a directory, not initializing")
+  except FileNotFoundError:
+    pass
+
+  if not check_dir_empty(current_dir):
+    answer = input("The current directory is not empty, continue anyway? [y/N] ")
+    if not answer.lower() == "y":
+      logger.warn("Command cancelled.")
+      sys.exit(1)
+
   os.makedirs(configs_dir, exist_ok=True)
   generate_config("server")
 
 def start_server():
   log = logger.getChild("server.start")
 
-  server_config = load_config("server")
-  ram_limit = server_config["ram"]
+  try:
+    check_script_dir()
+  except FileNotFoundError as error:
+    log.error(error.message)
+    sys.exit(1)
+  except NotADirectoryError as error:
+    log.error(error.message)
+    sys.exit(1)
+
+  try:
+    server_config = load_config("server")
+  except FileNotFoundError:
+    log.error(f"'{script_dirname}' does not exist, cannot read configuration")
+  except NotADirectoryError:
+    log.error(f"'{script_dirname}' is not a directory, can't read configuration")
+
+  memory_limit = server_config["ram"]
 
   command_args = [
     "java",
-    f"-Xms{ram_limit['min']}",
-    f"-Xmx{ram_limit['max']}",
+    f"-Xms{memory_limit['min']}",
+    f"-Xmx{memory_limit['max']}",
     "-jar",
     server_config["jarfile"]
   ]
