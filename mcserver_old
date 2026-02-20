@@ -72,7 +72,7 @@ def start_server():
 
   server_config = loaded_config[0]
   if not Path(server_config["jarfile"]).exists():
-    raise FileNotFoundError(f"Can't find '{server_config['jarfile'}'")
+    raise FileNotFoundError(f"Can't find '{server_config['jarfile']}'")
 
   memory_limit = server_config["ram"]
 
