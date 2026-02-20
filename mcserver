@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging as log
 import os
+import requests
 import sys
 
 # RAM size in MebiByte
@@ -14,6 +15,10 @@ configs = {
     "hide_gui": True
   }
 }
+
+def search_mod(query):
+  response = requests.get("https://staging-api.modrinth.com/")
+  log.debug(f"Modrinth response:\n{response.text}")
 
 def start_server():
   server_config = configs["server"]
@@ -37,13 +42,15 @@ def start_server():
 def main():
   log.basicConfig(
     format="[%(levelname)s]: %(message)s",
-    level=log.INFO
+    level=log.DEBUG
   )
 
   script_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
   command = script_args[0]
 
   match command:
+    case "search":
+      search_mod(" ".join(script_args[1:]))
     case "start":
       start_server()
     case "":
