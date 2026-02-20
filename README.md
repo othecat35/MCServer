@@ -17,7 +17,6 @@ System-wide (Requires root):
 3. Run `chmod +x /usr/local/bin/mcserver`
 
 ## Usage
-Initialize directory: `mcserver init`
 Start the server: `mcserver start`
 
 ## Note
