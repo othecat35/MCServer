@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import shutil
 import subprocess
 import tempfile
 import unittest
@@ -27,13 +26,17 @@ class TestMCServer(unittest.TestCase):
       text=True
     )
 
-    self.assertIn("Directory initialized", output.stderr)
+    self.assertIn("Directory has been initialized", output.stderr)
 
+    # Check directories structure
     self.assertTrue(self.mcserver_path.exists())
     self.assertTrue(self.configs_path.exists())
 
+    # Check files
+    self.assertTrue((self.configs_path / "server.json").exists())
+
   # Test failure
-  def test_start_without_init(self):
+  def test_start_without_initializing(self):
     output = subprocess.run(
       [self.script_path, "start"],
       cwd=self.test_directory,
@@ -41,7 +44,7 @@ class TestMCServer(unittest.TestCase):
       text=True
     )
 
-    self.assertIn("Directory '.mcserver' not found, is directory not initialized?", output.stderr)
+    self.assertIn("Directory '.mcserver' is not found, is this directory not been initialized?", output.stderr)
 
 if __name__ == "__main__":
   unittest.main()
