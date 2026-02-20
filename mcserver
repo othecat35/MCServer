@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
+import os
+
 def main():
-  pass
+  java_command_argv = [
+    "java",
+    "-Xms512M",
+    "-Xmx2G",
+    "Launcher.jar",
+    "nogui"
+  ]
+
+  os.execvp("java", java_command_argv)
 
 if __name__ == "__main__": main()
