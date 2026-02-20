@@ -44,7 +44,7 @@ def search_mod(query):
     },
 
     headers={
-      "User-Agent": "Othecat35/MCServer/0.2"
+      "User-Agent": "othecat35/MCServer "
     }
   )
 
@@ -68,6 +68,7 @@ def start_server():
     "java",
     f"-Xms{memory_limit['min']}M",
     f"-Xmx{memory_limit['max']}M",
+    "-jar",
     server_config["jarfile"]
   ]
 
