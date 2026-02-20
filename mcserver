@@ -1,28 +1,54 @@
 #!/usr/bin/env python3
+import logging as log
 import os
 import sys
 
+# RAM size in MebiByte
+configs = {
+  "server": {
+    "jarfile": "Launcher.jar",
+    "ram": {
+      "min": 512,
+      "max": 2_048
+    },
+    "hide_gui": True
+  }
+}
+
 def start_server():
+  server_config = configs["server"]
+  memory_limit = server_config["ram"]
+
   java_command_argv = [
     "java",
-    "-Xms512M",
-    "-Xmx2G",
-    "Launcher.jar",
-    "nogui"
+    f"-Xms{memory_limit['min']}M",
+    f"-Xmx{memory_limit['max']}M",
+    server_config["jarfile"]
   ]
 
+  if server_config["hide_gui"]:
+    java_command_argv.append("nogui")
+
+  log.info("Starting Minecraft server...")
+  log.debug(f"Executing command: {" ".join(java_command_argv)}")
   os.execvp("java", java_command_argv)
 
+# Main
 def main():
-  script_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
+  log.basicConfig(
+    format="[%(levelname)s]: %(message)s",
+    level=log.INFO
+  )
 
+  script_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
   command = script_args[0]
+
   match command:
     case "start":
       start_server()
     case "":
-      print("[ERROR]: No command was provided")
+      log.error("No command was provided")
     case _:
-      print(f"[ERROR]: Unknown command: {command}")
+      log.error(f"Unknown command: {command}")
 
 if __name__ == "__main__": main()
