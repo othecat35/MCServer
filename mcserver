@@ -12,12 +12,39 @@ configs = {
       "min": 512,
       "max": 2_048
     },
-    "hide_gui": True
+    "hide_gui": True,
+    "mc_version": "1.20.2",
+    "software": {
+      "loader": "fabric",
+      "version": "0.18.4"
+    }
   }
 }
 
 def search_mod(query):
-  response = requests.get("https://staging-api.modrinth.com/")
+  server_config = configs["server"]
+  server_software = server_config["software"]
+
+  search_filters = f"[\
+[\"project_type:mod\"],\
+[\"server_side:optional\"],\
+[\"categories:{server_software['loader']}\"],\
+[\"versions:{server_config['mc_version']}\"]\
+]"
+
+  response = requests.get(
+    "https://api.modrinth.com/v2/search",
+    params={
+      "query": query,
+      "facets": search_filters,
+      "limit": 1
+    },
+
+    headers={
+      "User-Agent": "Othecat35/MCServer/0.1"
+    }
+  )
+
   log.debug(f"Modrinth response:\n{response.text}")
 
 def start_server():
