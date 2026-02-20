@@ -6,9 +6,9 @@ CLI Commands:
   And `install` is used to install and setup the Minecraft server with the configuration inside ".mcserver".
 
 Mod Management:
-- Add mod search command with Modrinth
+- Add mod search command with Modrinth: Done!
 - Mod search with key=value. eg, mcserver search lithium limit=20
 
 Miscellaneous
-- Rename "ram" to "memory"?
-- Shrink the project scope first
+- Rename "ram" to "memory"? Only in scriptt
+- Shrink the project scope first: Yep!

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import logging as log
 import os
 import requests
@@ -13,7 +14,8 @@ configs = {
       "max": 2_048
     },
     "hide_gui": True,
-    "mc_version": "1.20.2",
+
+    "version": "1.20.2",
     "software": {
       "loader": "fabric",
       "version": "0.18.4"
@@ -21,31 +23,42 @@ configs = {
   }
 }
 
+# Command functions
 def search_mod(query):
   server_config = configs["server"]
   server_software = server_config["software"]
 
-  search_filters = f"[\
-[\"project_type:mod\"],\
-[\"server_side:optional\"],\
-[\"categories:{server_software['loader']}\"],\
-[\"versions:{server_config['mc_version']}\"]\
-]"
+  search_filters = json.dumps([
+    ["project_type:mod"],
+    ["server_side:required","server_side:optional"],
+    [f"categories:{server_software['loader']}"],
+    [f"versions:{server_config['version']}"]])
 
+  log.info("Searching mods in Modrinth...")
   response = requests.get(
     "https://api.modrinth.com/v2/search",
     params={
       "query": query,
       "facets": search_filters,
-      "limit": 1
+      "limit": 5
     },
 
     headers={
-      "User-Agent": "Othecat35/MCServer/0.1"
+      "User-Agent": "Othecat35/MCServer/0.2"
     }
   )
 
-  log.debug(f"Modrinth response:\n{response.text}")
+  response.raise_for_status()
+  mods_list = response.json().get("hits", [])
+
+  if not mods_list:
+    raise Warning("Couldn't find any mod (only showing mods with server environment)")
+
+  for mod in mods_list:
+    print(f"\n"
+f"{mod['title']} ({mod['slug']}) by {mod['author']}"
+f" [Server: {mod['server_side']} | Client: {mod['client_side']}]\n"
+f"  {mod['description']}")
 
 def start_server():
   server_config = configs["server"]
@@ -69,20 +82,27 @@ def start_server():
 def main():
   log.basicConfig(
     format="[%(levelname)s]: %(message)s",
-    level=log.DEBUG
+    level=log.INFO
   )
 
   script_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
   command = script_args[0]
 
-  match command:
-    case "search":
-      search_mod(" ".join(script_args[1:]))
-    case "start":
-      start_server()
-    case "":
-      log.error("No command was provided")
-    case _:
-      log.error(f"Unknown command: {command}")
+  try:
+    match command:
+      case "search":
+        search_mod(" ".join(script_args[1:]))
+      case "start":
+        start_server()
+      case "":
+        log.error("No command was provided")
+      case _:
+        log.error(f"Unknown command: {command}")
+  except Warning as error:
+    log.warning(error)
+    sys.exit(1)
+  except Exception as error:
+    log.error(error)
+    sys.exit(1)
 
 if __name__ == "__main__": main()
