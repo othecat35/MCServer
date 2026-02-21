@@ -4,6 +4,7 @@ import logging as log
 import os
 import requests
 import sys
+import textwrap
 
 # RAM size in MebiByte
 configs = {
@@ -30,7 +31,7 @@ colors = {
   "green": "\033[32m",
   "red": "\033[31m",
   "reset": "\033[0m",
-  "yellow": "\033[33m"
+  "yellow": "\033[93m"
 }
 
 def color(color_name):
@@ -89,10 +90,11 @@ def search_mod(query):
     server_side = mod_environment_color(mod['server_side'])
     client_side = mod_environment_color(mod["client_side"])
 
-    description = mod["description"]
+    description = "\n".join(textwrap.wrap(mod["description"], subsequent_indent="   "))
 
     print(f"""
-{title} ({slug}) by {author} [ {color("bold")}Server: {server_side} | Client: {client_side} ]
+{title} ({slug}) by {author}
+- {color('bold')}Server: {server_side} | Client: {client_side}
   {description}""")
 
 def start_server():
