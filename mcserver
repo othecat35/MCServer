@@ -36,6 +36,8 @@ colors = {
 def color(color_name):
   if sys.stdout.isatty() and sys.stderr.isatty():
     return colors[color_name]
+  else:
+    return ""
 
 def mod_environment_color(environment):
   if environment == "required":
