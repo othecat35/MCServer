@@ -23,6 +23,32 @@ configs = {
   }
 }
 
+# Color functions
+colors = {
+  "gray": "\033[90m",
+  "green": "\033[32m",
+  "red": "\033[31m",
+  "reset": "\033[0m",
+  "yellow": "\033[33m"
+}
+
+def color(color_name):
+  if sys.stdout.isatty() and sys.stderr.isatty():
+    return colors[color_name]
+
+def mod_environment_color(environment):
+  if environment == "required":
+    return f"{color('green')}Required{color('reset')}"
+
+  elif environment == "optional":
+    return f"{color('yellow')}Optional{color('reset')}"
+
+  elif environment == "unsupported":
+    return f"{color('red')}Unsupported{color('reset')}"
+
+  elif environment == "unknown":
+    return f"{color('gray')}Unknown{color('reset')}"
+
 # Command functions
 def search_mod(query):
   server_config = configs["server"]
@@ -55,10 +81,18 @@ def search_mod(query):
     raise Warning("Couldn't find any mod (only showing mods with server environment)")
 
   for mod in mods_list:
-    print(f"\n"
-f"{mod['title']} ({mod['slug']}) by {mod['author']}"
-f" [Server: {mod['server_side']} | Client: {mod['client_side']}]\n"
-f"  {mod['description']}")
+    title = f"{color('green')}{mod['title']}{color('reset')}"
+    slug = f"{color('green')}{mod['slug']}{color('reset')}"
+    author = f"{color('yellow')}{mod['author']}{color('reset')}"
+
+    server_side = mod_environment_color(mod["server_side"])
+    client_side = mod_environment_color(mod["client_side"])
+
+    description = mod["description"]
+
+    print(f"""
+{title} ({slug}) by {author} [Server: {server_side} | Client: {client_side}]
+  {description}""")
 
 def start_server():
   server_config = configs["server"]
