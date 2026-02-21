@@ -18,8 +18,7 @@ configs = {
 
     "version": "1.20.2",
     "software": {
-      "loader": "fabric",
-      "version": "0.18.4"
+      "loader": "fabric"
     }
   }
 }
@@ -28,8 +27,8 @@ configs = {
 colors = {
   "bold": "\033[1m",
   "gray": "\033[90m",
-  "green": "\033[32m",
-  "red": "\033[31m",
+  "green": "\033[92m",
+  "red": "\033[91m",
   "reset": "\033[0m",
   "yellow": "\033[93m"
 }
@@ -83,7 +82,7 @@ def search_mod(query):
     raise Warning("Couldn't find any mod (only showing mods with server environment)")
 
   for mod in mods_list:
-    title = f"{color("bold")}{color('green')}{mod['title']}{color('reset')}"
+    title = f"{color('bold')}{color('green')}{mod['title']}{color('reset')}"
     slug = f"{color('green')}{mod['slug']}{color('reset')}"
     author = f"{color('yellow')}{mod['author']}{color('reset')}"
 
