@@ -67,7 +67,7 @@ def search_mod(query):
     params={
       "query": query,
       "facets": search_filters,
-      "limit": 5
+      "limit": 20
     },
 
     headers={
@@ -86,13 +86,13 @@ def search_mod(query):
     slug = f"{color('green')}{mod['slug']}{color('reset')}"
     author = f"{color('yellow')}{mod['author']}{color('reset')}"
 
-    server_side = f"{color('bold')}{mod_environment_color(mod['server_side'])}"
+    server_side = mod_environment_color(mod['server_side'])
     client_side = mod_environment_color(mod["client_side"])
 
     description = mod["description"]
 
     print(f"""
-{title} ({slug}) by {author} [Server: {server_side} | Client: {client_side}]
+{title} ({slug}) by {author} [ {color("bold")}Server: {server_side} | Client: {client_side} ]
   {description}""")
 
 def start_server():
