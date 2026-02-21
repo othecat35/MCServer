@@ -25,6 +25,7 @@ configs = {
 
 # Color functions
 colors = {
+  "bold": "\033[1m",
   "gray": "\033[90m",
   "green": "\033[32m",
   "red": "\033[31m",
@@ -81,11 +82,11 @@ def search_mod(query):
     raise Warning("Couldn't find any mod (only showing mods with server environment)")
 
   for mod in mods_list:
-    title = f"{color('green')}{mod['title']}{color('reset')}"
+    title = f"{color("bold")}{color('green')}{mod['title']}{color('reset')}"
     slug = f"{color('green')}{mod['slug']}{color('reset')}"
     author = f"{color('yellow')}{mod['author']}{color('reset')}"
 
-    server_side = mod_environment_color(mod["server_side"])
+    server_side = f"{color('bold')}{mod_environment_color(mod['server_side'])}"
     client_side = mod_environment_color(mod["client_side"])
 
     description = mod["description"]
