@@ -95,7 +95,7 @@ def search_mod(query):
 
     print(f"""
 {title} ({slug}) by {author}
-- {color('bold')}Server: {server_side} | Client: {client_side}
+• {color('bold')}Server: {server_side} | Client: {client_side}
   {description}""")
 
 def start_server():

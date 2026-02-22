@@ -14,10 +14,11 @@ A CLI tool to manage Minecraft: Java Edition server.
 System-wide (Requires root): 
 1. Download the `mcserver` script file
 2. Move the file to `/usr/local/bin`
-3. Run `chmod +x /usr/local/bin/mcserver`
+3. Give everyone `executable` permission of the file
 
 ## Usage
 Start the server: `mcserver start`
+Search mod from Modrinth: `mcserver search <query>`
 
 ## Note
 This project is just a personal project, don't take this seriously! But, I do want to make this functional for those self-hoster nerds.
