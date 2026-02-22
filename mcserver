@@ -36,8 +36,7 @@ colors = {
 def color(color_name):
   if sys.stdout.isatty() and sys.stderr.isatty():
     return colors[color_name]
-  else:
-    return ""
+  return ""
 
 def mod_environment_color(environment):
   if environment == "required":
@@ -84,18 +83,19 @@ def search_mod(query):
     raise Warning("Couldn't find any mod (only showing mods with server environment)")
 
   for mod in mods_list:
-    title = f"{color('bold')}{color('green')}{mod['title']}{color('reset')}"
-    slug = f"{color('green')}{mod['slug']}{color('reset')}"
-    author = f"{color('yellow')}{mod['author']}{color('reset')}"
+    title = f"{color('bold')}{mod['title']}{color('reset')}"
+    slug = mod['slug']
+
+    author = mod['author']
 
     server_side = mod_environment_color(mod['server_side'])
     client_side = mod_environment_color(mod["client_side"])
 
-    description = "\n".join(textwrap.wrap(mod["description"], subsequent_indent="   "))
+    description = textwrap.shorten(mod["description"], width=120, placeholder="...")
 
     print(f"""
-{title} ({slug}) by {author}
-• {color('bold')}Server: {server_side} | Client: {client_side}
+{title} ({slug}) {color("gray")}by {author}{color('reset')}
+> {color('bold')}Server: {server_side}{color('reset')} | Client: {client_side}
   {description}""")
 
 def start_server():
