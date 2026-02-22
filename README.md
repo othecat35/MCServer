@@ -3,7 +3,7 @@
 A CLI tool to manage Minecraft: Java Edition server.
 
 ## Requirements
-- Python 3.10 or newer
+- Python 3.12 or later
 - JRE (depends on Minecraft version):
   - MC 1.0 - 1.16.5 : JRE 8
   - MC 1.17 - 1.17.1 : JRE 16
@@ -20,6 +20,7 @@ System-wide (Requires root):
 Start the server: `mcserver start`
 Search mod from Modrinth: `mcserver search <query>`
 
+...
 ## Note
 This project is just a personal project, don't take this seriously! But, I do want to make this functional for those self-hoster nerds.
 
