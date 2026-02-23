@@ -121,7 +121,7 @@ def start_server():
 def main():
   log.basicConfig(
     format="[%(levelname)s]: %(message)s",
-    level=log.DEBUG
+    level=log.INFO
   )
 
   script_args = sys.argv[1:] if len(sys.argv) > 1 else [""]
