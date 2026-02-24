@@ -56,6 +56,13 @@ def mod_environment_color(environment):
   elif environment == "unknown":
     return f"{color('gray')}Unknown{color('reset')}"
 
+# Config functions
+def generate_config(config_name):
+  pass
+
+def load_config(config_name):
+  pass
+
 # Command functions
 def search_mod(query):
   server_config = configs["server"]
