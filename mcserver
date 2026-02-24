@@ -8,7 +8,7 @@ import sys
 import textwrap
 
 # RAM size in MebiByte
-configs = {
+default_configs = {
   "server": {
     "jarfile": "Launcher.jar",
     "ram": {
@@ -26,6 +26,7 @@ configs = {
 
 # Paths
 mcserver_dir = Path(".mcserver")
+configs_dir = mcserver_dir / "configs"
 
 # Color functions
 colors = {
@@ -58,14 +59,26 @@ def mod_environment_color(environment):
 
 # Config functions
 def generate_config(config_name):
-  pass
+  config_filename = f"{config_name}.json"
+  config_path = configs_dir / config_filename
+
+  with open(config_path, mode="xt") as config_file:
+    json.dump(
+      default_configs[config_name],
+      config_file,
+      indent=2
+    )
 
 def load_config(config_name):
-  pass
+  config_filename = f"{config_name}.json"
+  config_path = configs_dir / config_filename
+
+  with open(config_path, mode="rt") as config_file:
+    return json.load(config_file)
 
 # Command functions
 def search_mod(query):
-  server_config = configs["server"]
+  server_config = load_config("server")
   server_software = server_config["software"]
 
   search_limit = 20
@@ -117,7 +130,7 @@ def search_mod(query):
   {description}""")
 
 def start_server():
-  server_config = configs["server"]
+  server_config = load_config("server")
   memory_limit = server_config["ram"]
 
   java_command_argv = [
@@ -142,6 +155,9 @@ def initialize_directory():
     log.info(f"Reinitializing MCServer directory at {mcserver_dir.resolve()}")
 
   mcserver_dir.mkdir(exist_ok=True)
+  configs_dir.mkdir(exist_ok=True)
+
+  generate_config("server")
 
 # Main
 def main():

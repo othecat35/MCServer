@@ -1,0 +1,12 @@
+{
+  "jarfile": "Launchera.jar",
+  "ram": {
+    "min": 512,
+    "max": 2048
+  },
+  "hide_gui": true,
+  "version": "1.20.2",
+  "software": {
+    "loader": "fabric"
+  }
+}
