@@ -127,7 +127,7 @@ def initialize_directory():
   if not mcserver_dir.exists():
     log.info(f"Initializing MCServer directory at {mcserver_dir.resolve()}")
   else:
-    log.info(f"Reinitializing MCServer directort at {mcserver_dir.resolve()}")
+    log.info(f"Reinitializing MCServer directory at {mcserver_dir.resolve()}")
 
   mcserver_dir.mkdir(exist_ok=True)
 
