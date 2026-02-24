@@ -12,3 +12,7 @@ Mod Management:
 Miscellaneous
 - Rename "ram" to "memory"? Only in scriptt
 - Shrink the project scope first: Yep!
+
+new things
+- Create config generator and loader
+- Make the search_mod limit based in modrinth configuration file
