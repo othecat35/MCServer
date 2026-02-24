@@ -61,6 +61,7 @@ def search_mod(query):
   server_config = configs["server"]
   server_software = server_config["software"]
 
+  search_limit = 20
   search_filters = json.dumps([
     ["project_type:mod"],
     ["server_side!=unsupported"],
@@ -73,7 +74,7 @@ def search_mod(query):
     params={
       "query": query,
       "facets": search_filters,
-      "limit": 20
+      "limit": search_limit
     },
 
     headers={
@@ -82,11 +83,15 @@ def search_mod(query):
   )
 
   response.raise_for_status()
-  mods_list = response.json().get("hits", [])
+  response_json = response.json()
+  mods_list = response_json.get("hits", [])
 
   if not mods_list:
     raise Warning("Couldn't find any mod (only showing mods with server environment)")
 
+  total_hits = response_json.get("total_hits", 0)
+  shown_mods_count = len(mods_list) if len(mods_list) < search_limit else search_limit
+  log.info(f"Showing {shown_mods_count} out of {total_hits} mods:")
   for mod in mods_list:
     title = f"{color('bold')}{mod['title']}{color('reset')}"
     slug = mod['slug']
