@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from pathlib import Path
 import json
 import logging as log
 import os
@@ -23,6 +24,9 @@ configs = {
   }
 }
 
+# Paths
+mcserver_dir = Path(".mcserver")
+
 # Color functions
 colors = {
   "bold": "\033[1m",
@@ -36,7 +40,8 @@ colors = {
 def color(color_name):
   if sys.stdout.isatty() and sys.stderr.isatty():
     return colors[color_name]
-  return ""
+  else:
+    return ""
 
 def mod_environment_color(environment):
   if environment == "required":
@@ -95,6 +100,7 @@ def search_mod(query):
 
     print(f"""
 {title} ({slug}) {color("gray")}by {author}{color('reset')}
+> https://modrinth.com/mod/{slug}
 > {color('bold')}Server: {server_side}{color('reset')} | Client: {client_side}
   {description}""")
 
@@ -117,6 +123,14 @@ def start_server():
   log.debug(f"Executing command: {" ".join(java_command_argv)}")
   os.execvp("java", java_command_argv)
 
+def initialize_directory():
+  if not mcserver_dir.exists():
+    log.info(f"Initializing MCServer directory at {mcserver_dir.resolve()}")
+  else:
+    log.info(f"Reinitializing MCServer directort at {mcserver_dir.resolve()}")
+
+  mcserver_dir.mkdir(exist_ok=True)
+
 # Main
 def main():
   log_level = log.DEBUG if os.getenv("MCSERVER_DEBUG") == "1" else log.INFO
@@ -131,6 +145,8 @@ def main():
 
   try:
     match command:
+      case "init":
+        initialize_directory()
       case "search":
         search_mod(" ".join(script_args[1:]))
       case "start":
