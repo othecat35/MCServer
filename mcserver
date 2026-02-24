@@ -63,7 +63,7 @@ def search_mod(query):
 
   search_filters = json.dumps([
     ["project_type:mod"],
-    ["server_side:required","server_side:optional"],
+    ["server_side!=unsupported"],
     [f"categories:{server_software['loader']}"],
     [f"versions:{server_config['version']}"]])
 
