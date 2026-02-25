@@ -140,6 +140,10 @@ def start_server():
   server_config = load_config("server")
   memory_limit = server_config["ram"]
 
+  jarfile = server_config['jarfile']
+  if not Path(jarfile).exists():
+    raise FileNotFoundError(f"Couldn't find server jarfile '{jarfile}'")
+
   java_command_argv = [
     "java",
     f"-Xms{memory_limit['min']}M",
