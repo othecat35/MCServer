@@ -10,6 +10,9 @@ import textwrap
 
 # RAM size in MebiByte
 default_configs = {
+  "modrinth": {
+    "search_limit": 20
+  },
   "server": {
     "jarfile": "Launcher.jar",
     "ram": {
@@ -85,13 +88,30 @@ def load_config(config_name):
     raise ValueError(f"Failed to parse configuration file '{config_path}': {msg} at line {lineno} column {colno}")
 
 # Command functions
+def initialize_directory(args):
+  if not mcserver_dir.exists():
+    log.info(f"Initializing MCServer directory at {mcserver_dir.resolve()}")
+  else:
+    log.info(f"Reinitializing MCServer directory at {mcserver_dir.resolve()}")
+
+  mcserver_dir.mkdir(exist_ok=True)
+  configs_dir.mkdir(exist_ok=True)
+
+  generate_config("modrinth")
+  generate_config("server")
+
 def search_mod(args):
   query = " ".join(args.query)
+  offset = args.page
 
+  modrinth_config = load_config("modrinth")
   server_config = load_config("server")
+
+  search_limit = modrinth_config["search_limit"]
+  search_offset = search_limit * (offset - 1)
+
   server_software = server_config["software"]
 
-  search_limit = 20
   search_filters = json.dumps([
     ["project_type:mod"],
     ["server_side!=unsupported"],
@@ -104,11 +124,12 @@ def search_mod(args):
     params={
       "query": query,
       "facets": search_filters,
-      "limit": search_limit
+      "limit": search_limit,
+      "offset": search_offset
     },
 
     headers={
-      "User-Agent": "othecat35/MCServer "
+      "User-Agent": "othecat35/MCServer"
     }
   )
 
@@ -121,7 +142,7 @@ def search_mod(args):
 
   total_hits = response_json.get("total_hits", 0)
   shown_mods_count = len(mods_list) if len(mods_list) < search_limit else search_limit
-  log.info(f"Showing {shown_mods_count} out of {total_hits} mods:")
+  log.info(f"Showing {shown_mods_count} out of {total_hits} mods (skipping the first {search_offset} mods):")
   for mod in mods_list:
     title = f"{color('bold')}{mod['title']}{color('reset')}"
     slug = mod['slug']
@@ -162,17 +183,6 @@ def start_server(args):
   log.debug(f"Executing command: {" ".join(java_command_argv)}")
   os.execvp("java", java_command_argv)
 
-def initialize_directory():
-  if not mcserver_dir.exists():
-    log.info(f"Initializing MCServer directory at {mcserver_dir.resolve()}")
-  else:
-    log.info(f"Reinitializing MCServer directory at {mcserver_dir.resolve()}")
-
-  mcserver_dir.mkdir(exist_ok=True)
-  configs_dir.mkdir(exist_ok=True)
-
-  generate_config("server")
-
 # Main
 def main():
   log_level = log.DEBUG if os.getenv("MCSERVER_DEBUG") == "1" else log.INFO
@@ -185,8 +195,12 @@ def main():
   parser = argparse.ArgumentParser()
   subparsers = parser.add_subparsers(required=True)
 
+  parser_init = subparsers.add_parser("init", help="initialize MCServer directory")
+  parser_init.set_defaults(func=initialize_directory)
+
   parser_search = subparsers.add_parser("search", help="search mods from Modrinth")
   parser_search.add_argument("query", help="search query", nargs="+")
+  parser_search.add_argument("--page", help="page number of the search results", type=int, default=1)
   parser_search.set_defaults(func=search_mod)
 
   parser_start = subparsers.add_parser("start", help="start the server")
