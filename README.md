@@ -2,6 +2,9 @@
 ## About
 A CLI tool to manage Minecraft: Java Edition server.
 
+## For Windows
+I can't be sure if this script can work at all, but use WSL just in case. And no I don't even have hope with WSL either, so you're on your own.
+
 ## Requirements
 - Python 3.12 or later
 - JRE (depends on Minecraft version):
@@ -14,13 +17,12 @@ A CLI tool to manage Minecraft: Java Edition server.
 System-wide (Requires root): 
 1. Download the `mcserver` script file
 2. Move the file to `/usr/local/bin`
-3. Give everyone `executable` permission of the file
+3. Run `chmod +x mcserver`
 
 ## Usage
 Start the server: `mcserver start`
 Search mod from Modrinth: `mcserver search <query>`
 
-...
 ## Note
 This project is just a personal project, don't take this seriously! But, I do want to make this functional for those self-hoster nerds.
 

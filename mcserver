@@ -73,8 +73,15 @@ def load_config(config_name):
   config_filename = f"{config_name}.json"
   config_path = configs_dir / config_filename
 
-  with open(config_path, mode="rt") as config_file:
-    return json.load(config_file)
+  try:
+    with open(config_path, mode="rt") as config_file:
+      return json.load(config_file)
+  except json.JSONDecodeError as error:
+    msg = error.msg.lower()
+    lineno = error.lineno
+    colno = error.colno
+
+    raise ValueError(f"Failed to parse configuration file '{config_path}': {msg} at line {lineno} column {colno}")
 
 # Command functions
 def search_mod(query):

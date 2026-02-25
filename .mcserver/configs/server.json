@@ -1,5 +1,5 @@
 {
-  "jarfile": "Launchera.jar",
+  "jarfile": "Launcher.jar",
   "ram": {
     "min": 512,
     "max": 2048
