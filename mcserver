@@ -86,8 +86,6 @@ def load_config(config_name):
     colno = error.colno
 
     raise ValueError(f"Failed to parse configuration file '{config_path}': {msg} at line {lineno} column {colno}")
-  except Exception as error:
-    raise error
 
 # Command functions
 def initialize_directory(args):
@@ -99,21 +97,23 @@ def initialize_directory(args):
   mcserver_dir.mkdir(exist_ok=True)
   configs_dir.mkdir(exist_ok=True)
 
-  # TODO: make this config just iterate the default_config's key so it generates every config automatically
-  generate_config("modrinth")
-  generate_config("server")
+  for config in default_configs.keys():
+    try:
+      generate_config(config)
+    except FileExistsError:
+      log.debug(f"Configuration file for '{config}' already exists, not regenerating")
 
 def search_mod(args):
   query = " ".join(args.query)
-  offset = args.page
+  page = args.page
 
   modrinth_config = load_config("modrinth")
   server_config = load_config("server")
 
-  search_limit = modrinth_config["search_limit"]
-  search_offset = search_limit * (offset - 1)
-
   server_software = server_config["software"]
+
+  search_limit = modrinth_config["search_limit"]
+  search_offset = search_limit * (page - 1)
 
   search_filters = json.dumps([
     ["project_type:mod"],
@@ -159,9 +159,9 @@ def search_mod(args):
 
     print(f"""
 {title} ({slug}) {color("gray")}by {author}{color('reset')}
-> https://modrinth.com/mod/{slug}
 > {color('bold')}Server: {server_side}{color('reset')} | Client: {client_side}
-  {description}""")
+> https://modrinth.com/mod/{slug}
+ {description}""")
 
 def start_server(args):
   server_config = load_config("server")
@@ -169,11 +169,11 @@ def start_server(args):
 
   jarfile = server_config['jarfile']
 
-  if memory_limit["min"] > memory_limit["max"]:
-    raise ValueError("Minimum RAM cannot be larger that maximum RAM")
-
   if not Path(jarfile).exists():
     raise FileNotFoundError(f"Couldn't find server jarfile '{jarfile}'")
+
+  if memory_limit["min"] > memory_limit["max"]:
+    raise ValueError("Minimum RAM cannot be larger that maximum RAM")
 
   java_command_argv = [
     "java",
@@ -202,14 +202,17 @@ def main():
   parser = argparse.ArgumentParser()
   subparsers = parser.add_subparsers(required=True)
 
+  # 'init' subcommand
   parser_init = subparsers.add_parser("init", help="initialize MCServer directory")
   parser_init.set_defaults(func=initialize_directory)
 
+  # 'search' subcommand
   parser_search = subparsers.add_parser("search", help="search mods from Modrinth")
   parser_search.add_argument("query", help="search query", nargs="+")
   parser_search.add_argument("--page", help="page number of the search results", type=int, default=1)
   parser_search.set_defaults(func=search_mod)
 
+  # 'start' subcommand
   parser_start = subparsers.add_parser("start", help="start the server")
   parser_start.set_defaults(func=start_server)
 
