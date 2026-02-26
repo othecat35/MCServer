@@ -5,7 +5,7 @@
     "max": 2048
   },
   "hide_gui": true,
-  "version": "1.20.2",
+  "version": "1.21.11",
   "software": {
     "loader": "fabric"
   }

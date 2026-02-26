@@ -21,7 +21,7 @@ default_configs = {
     },
     "hide_gui": True,
 
-    "version": "1.20.2",
+    "version": "1.21.11",
     "software": {
       "loader": "fabric"
     }
@@ -86,6 +86,8 @@ def load_config(config_name):
     colno = error.colno
 
     raise ValueError(f"Failed to parse configuration file '{config_path}': {msg} at line {lineno} column {colno}")
+  except Exception as error:
+    raise error
 
 # Command functions
 def initialize_directory(args):
@@ -97,6 +99,7 @@ def initialize_directory(args):
   mcserver_dir.mkdir(exist_ok=True)
   configs_dir.mkdir(exist_ok=True)
 
+  # TODO: make this config just iterate the default_config's key so it generates every config automatically
   generate_config("modrinth")
   generate_config("server")
 
@@ -165,6 +168,10 @@ def start_server(args):
   memory_limit = server_config["ram"]
 
   jarfile = server_config['jarfile']
+
+  if memory_limit["min"] > memory_limit["max"]:
+    raise ValueError("Minimum RAM cannot be larger that maximum RAM")
+
   if not Path(jarfile).exists():
     raise FileNotFoundError(f"Couldn't find server jarfile '{jarfile}'")
 
