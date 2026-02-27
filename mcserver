@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+
 import argparse
 import json
 import logging as log
@@ -10,22 +11,25 @@ import textwrap
 import urllib.parse
 import urllib.request
 
-# RAM size in MebiByte
 default_configs = {
   "modrinth": {
     "search_limit": 20
   },
+
   "server": {
-    "jarfile": "Launcher.jar",
     "ram": {
+      "_comment": "Memory size in MebiByte (MiB)",
       "min": 512,
       "max": 2_048
     },
+
+    "jarfile": "Launcher.jar",
     "hide_gui": True,
 
     "version": "1.21.11",
     "software": {
-      "loader": "fabric"
+      "loader": "fabric",
+      "version": "0.18.4"
     }
   }
 }
@@ -151,10 +155,11 @@ def search_mod(args):
   mods_list = response_json.get("hits", [])
 
   if not mods_list:
-    raise Warning("Couldn't find any mod (only showing mods with server environment)")
+    raise Exception(f"Couldn't find any mod (only showing mods with server environment and Minecraft {server_config['version']})")
 
   total_hits = response_json.get("total_hits", 0)
   shown_mods_count = len(mods_list) if len(mods_list) < search_limit else search_limit
+
   log.info(f"Showing {shown_mods_count} out of {total_hits} mods (skipping the first {search_offset} mods):")
   for mod in mods_list:
     title = f"{color('bold')}{mod['title']}{color('reset')}"
@@ -183,7 +188,7 @@ def start_server(args):
     raise FileNotFoundError(f"Couldn't find server jarfile '{jarfile}'")
 
   if memory_limit["min"] > memory_limit["max"]:
-    raise ValueError("Minimum RAM cannot be larger that maximum RAM")
+    raise ValueError(f"Minimum RAM cannot be larger that maximum RAM, please check configuration file for `server`")
 
   java_command_argv = [
     "java",

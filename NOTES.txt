@@ -7,12 +7,12 @@ CLI Commands:
 
 Mod Management:
 - Add mod search command with Modrinth: Done!
-- Mod search with key=value. eg, mcserver search lithium limit=20
+- Mod search with key=value. eg, mcserver search lithium limit=20: using flag
 
 Miscellaneous
-- Rename "ram" to "memory"? Only in scriptt
+- Rename "ram" to "memory"? Only in script
 - Shrink the project scope first: Yep!
 
 new things
-- Create config generator and loader
-- Make the search_mod limit based in modrinth configuration file
+- Create config generator and loader: Done
+- Make the search_mod limit based in modrinth configuration file: Done
