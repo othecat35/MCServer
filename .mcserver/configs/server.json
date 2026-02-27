@@ -1,12 +1,14 @@
 {
-  "jarfile": "Launcher.jar",
   "ram": {
+    "_comment": "Memory size in MebiByte (MiB)",
     "min": 512,
     "max": 2048
   },
+  "jarfile": "Launcher.jar",
   "hide_gui": true,
   "version": "1.21.11",
   "software": {
-    "loader": "fabric"
+    "loader": "fabric",
+    "version": "0.18.4"
   }
 }
