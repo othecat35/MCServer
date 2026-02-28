@@ -4,3 +4,8 @@ Added:
  - `search` command
  - `start` command
  - Config system
+
+# v1.0.1 - Update log messages
+Changes:
+ - `Searching mods` message now includes search filters
+ - Remove the word `file` in  is some configuration error messages
