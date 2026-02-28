@@ -96,7 +96,7 @@ def load_config(config_name):
     lineno = error.lineno
     colno = error.colno
 
-    raise ValueError(f"Failed to parse configuration file '{config_path}': {msg} at line {lineno} column {colno}")
+    raise ValueError(f"Failed to parse configuration for `{config_name}`: {msg} at line {lineno} column {colno}")
 
 # Requests
 def request_get(url, params={}, headers={
@@ -125,7 +125,7 @@ def initialize_directory(args):
     try:
       generate_config(config)
     except FileExistsError:
-      log.debug(f"Configuration file for '{config}' already exists, not regenerating")
+      log.debug(f"Configuration file for `{config}` already exists, not regenerating")
 
 def search_mod(args):
   query = " ".join(args.query)
@@ -145,7 +145,8 @@ def search_mod(args):
     [f"categories:{server_software['loader']}"],
     [f"versions:{server_config['version']}"]])
 
-  log.info("Searching mods in Modrinth...")
+  log.info(f"Searching mods in Modrinth for {server_software['loader'].capitalize()} server, Minecraft {server_config['version']}...")
+
   response = request_get(
     "https://api.modrinth.com/v2/search",
     {
@@ -160,7 +161,7 @@ def search_mod(args):
   mods_list = response_json.get("hits", [])
 
   if not mods_list:
-    raise Exception(f"Couldn't find any mod (only showing mods with server environment and Minecraft {server_config['version']})")
+    raise Exception(f"No mod found")
 
   total_hits = response_json.get("total_hits", 0)
   shown_mods_count = len(mods_list) if len(mods_list) < search_limit else search_limit
@@ -237,7 +238,7 @@ def start_server(args):
     raise FileNotFoundError(f"Couldn't find server jarfile '{jarfile}'")
 
   if memory_limit["min"] > memory_limit["max"]:
-    raise ValueError(f"Minimum RAM cannot be larger that maximum RAM, please check configuration file for `server`")
+    raise ValueError(f"Minimum RAM cannot be larger that maximum RAM, please check configuration for `server`")
 
   java_command_argv = [
     "java",
