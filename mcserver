@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 from pathlib import Path
 
@@ -56,6 +56,9 @@ def color(color_name):
   else:
     return ""
 
+def color_string(text, color_name):
+  return f"{color(color_name)}{text}{color('reset')}"
+
 def mod_environment_color(environment):
   if environment == "required":
     return f"{color('green')}Required{color('reset')}"
@@ -99,10 +102,10 @@ def load_config(config_name):
 def request_get(url, params={}, headers={
   "User-Agent": "othecat35/MCServer"
 }):
-  query_string = urllib.parse.urlencode(params)
+  query_string = f"?{urllib.parse.urlencode(params)}" if params else ""
   log.debug(f"Query string: {query_string}")
 
-  request_url = urllib.request.Request(f"{url}?{query_string}", headers=headers, method="GET")
+  request_url = urllib.request.Request(f"{url}{query_string}", headers=headers, method="GET")
   log.debug(f"Request URL: {request_url.full_url}")
 
   with urllib.request.urlopen(request_url) as response:
@@ -165,12 +168,12 @@ def search_mod(args):
 
   log.info(f"Showing {shown_mods_count} out of {total_hits} mods (skipping the first {search_offset} mods):")
   for mod in mods_list:
-    title = f"{color('bold')}{mod['title']}{color('reset')}"
-    slug = mod['slug']
+    title = color_string(mod['title'], "bold")
+    slug = mod["slug"]
 
-    author = mod['author']
+    author = mod["author"]
 
-    server_side = mod_environment_color(mod['server_side'])
+    server_side = mod_environment_color(mod["server_side"])
     client_side = mod_environment_color(mod["client_side"])
 
     description = textwrap.shorten(mod["description"], width=120, placeholder="...")
@@ -182,7 +185,48 @@ def search_mod(args):
  {description}""")
 
 def show_mod(args):
-  modid = args.modid
+  modid = args.modid[0]
+
+  log.info("Getting mod info...")
+  mod_info = json.loads(request_get(
+    f"https://api.modrinth.com/v2/project/{modid}",
+  ))
+
+  terminal_width, _ = os.get_terminal_size()
+  log.debug(terminal_width)
+
+  name = color_string(mod_info['title'], "bold")
+  description = color_string(mod_info["description"], "bold")
+
+  slug = color_string(mod_info["slug"], "bold")
+  id = color_string(mod_info["id"], "bold")
+
+  downloads = color_string(f"{mod_info["downloads"]:,}", "bold")
+  followers = color_string(f"{mod_info["followers"]:,}", "bold")
+
+  categories = color_string(", ".join(entry.capitalize() for entry in mod_info["categories"]), "bold")
+  loaders = color_string(", ".join(entry.capitalize() for entry in mod_info["loaders"]), "bold")
+  mc_versions = "\n".join(textwrap.wrap(color_string(", ".join(mod_info["game_versions"]), "bold"), width=terminal_width - 20, subsequent_indent=" "))
+
+  license_name = color_string(mod_info["license"]["name"], "bold")
+  license_id = color_string(mod_info["license"]["id"], "bold")
+
+  server_side = mod_environment_color(mod_info["server_side"])
+  client_side = mod_environment_color(mod_info["client_side"])
+
+  print(f"""Name: {name}
+Slug/ID: {slug} ({id})
+
+Downloads: {downloads}
+Followers: {followers}
+
+Categories: {categories}
+Loaders: {loaders}
+Environment: Server: {server_side} | Client: {client_side}
+Minecraft Versions: {mc_versions}
+
+License: {license_name} ({license_id})
+Description: {description}""")
 
 def start_server(args):
   server_config = load_config("server")
@@ -244,9 +288,13 @@ def main():
 
   args = parser.parse_args()
 
-  try:
+  # Let it crash
+  if True:
     args.func(args)
-  except Exception as error:
-    log.error(error)
+  else:
+    try:
+      args.func(args)
+    except Exception as error:
+      log.error(error)
 
 if __name__ == "__main__": main()
