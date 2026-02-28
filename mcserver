@@ -180,6 +180,9 @@ def search_mod(args):
 > https://modrinth.com/mod/{slug}
  {description}""")
 
+def show_mod(args):
+  modid = args.modid
+
 def start_server(args):
   server_config = load_config("server")
   memory_limit = server_config["ram"]
@@ -228,6 +231,11 @@ def main():
   parser_search.add_argument("query", help="search query", nargs="+")
   parser_search.add_argument("--page", help="page number of the search results", type=int, default=1)
   parser_search.set_defaults(func=search_mod)
+
+  # 'show' subcommand
+  parser_show = subparsers.add_parser("show", help="Show more info about a mod")
+  parser_show.add_argument("modid", help="slug/mod ID", nargs="+")
+  parser_show.set_defaults(func=show_mod)
 
   # 'start' subcommand
   parser_start = subparsers.add_parser("start", help="start the server")
