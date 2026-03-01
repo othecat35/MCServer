@@ -1,6 +1,6 @@
 # MCServer
 ## About
-A CLI tool to manage Minecraft: Java Edition server.
+A Python script project that is created with sole purpose of helping with managing self-hosted Minecraft: Java Edition server (primarily, me).
 
 ## For Windows
 I can't be sure if this script can work at all, but use WSL just in case. And no I don't even have hope with WSL either, so you're on your own.
