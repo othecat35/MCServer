@@ -16,3 +16,6 @@ Miscellaneous
 new things
 - Create config generator and loader: Done
 - Make the search_mod limit based in modrinth configuration file: Done
+
+Here's where I can yap about something
+- CHANGELOGS.md is primarily for myself?
