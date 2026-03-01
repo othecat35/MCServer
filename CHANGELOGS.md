@@ -16,3 +16,6 @@ Added:
 
 # 1.1.1
 - Replace textwrap.shorten to .wrap in `search` mod description
+
+# 1.2.0
+- Move java command options to a seperate launcher.json configuration
