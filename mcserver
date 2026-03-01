@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 from pathlib import Path
 
@@ -13,6 +13,8 @@ import textwrap
 import urllib.parse
 import urllib.request
 
+# Variables
+terminal_size = os.get_terminal_size()
 default_configs = {
   "modrinth": {
     "search_limit": 20
@@ -175,14 +177,13 @@ def search_mod(args):
 
     server_side = mod_environment_color(mod["server_side"])
     client_side = mod_environment_color(mod["client_side"])
-
-    description = textwrap.shorten(mod["description"], width=120, placeholder="...")
+    description = "\n".join(textwrap.wrap(mod["description"], width=terminal_size.columns, initial_indent=" ", subsequent_indent="  "))
 
     print(f"""
 {title} ({slug}) {color("gray")}by {author}{color('reset')}
 > {color('bold')}Server: {server_side}{color('reset')} | Client: {client_side}
 > https://modrinth.com/mod/{slug}
- {description}""")
+{description}""")
 
 def show_mod(args):
   modid = args.modid[0]

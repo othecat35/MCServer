@@ -13,3 +13,6 @@ Changes:
 # v1.1.0 - Show command
 Added:
  - `show` command
+
+# 1.1.1
+- Replace textwrap.shorten to .wrap in `search` mod description
