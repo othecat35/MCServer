@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 from pathlib import Path
 
@@ -16,12 +16,8 @@ import urllib.request
 # Variables
 terminal_size = os.get_terminal_size()
 default_configs = {
-  "modrinth": {
-    "search_limit": 20
-  },
-
-  "server": {
-    "ram": {
+  "launcher": {
+     "ram": {
       "_comment": "Memory size in MebiByte (MiB)",
       "min": 512,
       "max": 2_048
@@ -29,7 +25,13 @@ default_configs = {
 
     "jarfile": "Launcher.jar",
     "hide_gui": True,
+ },
 
+  "modrinth": {
+    "search_limit": 20
+  },
+
+  "server": {
     "version": "1.21.11",
     "software": {
       "loader": "fabric",
@@ -207,7 +209,7 @@ def show_mod(args):
 
   categories = color_string(", ".join(entry.capitalize() for entry in mod_info["categories"]), "bold")
   loaders = color_string(", ".join(entry.capitalize() for entry in mod_info["loaders"]), "bold")
-  mc_versions = "\n".join(textwrap.wrap(color_string(", ".join(mod_info["game_versions"]), "bold"), width=terminal_width - 20, subsequent_indent=" "))
+  mc_versions = "\n".join(textwrap.wrap(f"Minecraft Versions {color_string(', '.join(mod_info['game_versions']), 'bold')}", width=terminal_width, subsequent_indent=" "))
 
   license_name = color_string(mod_info["license"]["name"], "bold")
   license_id = color_string(mod_info["license"]["id"], "bold")
@@ -224,16 +226,16 @@ Followers: {followers}
 Categories: {categories}
 Loaders: {loaders}
 Environment: Server: {server_side} | Client: {client_side}
-Minecraft Versions: {mc_versions}
+{mc_versions}
 
 License: {license_name} ({license_id})
 Description: {description}""")
 
 def start_server(args):
-  server_config = load_config("server")
-  memory_limit = server_config["ram"]
+  launcher_config = load_config("launcher")
+  memory_limit = launcher_config["ram"]
 
-  jarfile = server_config['jarfile']
+  jarfile = launcher_config['jarfile']
 
   if not Path(jarfile).exists():
     raise FileNotFoundError(f"Couldn't find server jarfile '{jarfile}'")
@@ -246,10 +248,10 @@ def start_server(args):
     f"-Xms{memory_limit['min']}M",
     f"-Xmx{memory_limit['max']}M",
     "-jar",
-    server_config["jarfile"]
+    launcher_config["jarfile"]
   ]
 
-  if server_config["hide_gui"]:
+  if launcher_config["hide_gui"]:
     java_command_argv.append("nogui")
 
   log.info("Starting Minecraft server...")
