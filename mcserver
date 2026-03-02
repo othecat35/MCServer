@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 
 import argparse
 import json
 import math
 import os
 import sys
+import shutil
 import textwrap
 
 import urllib.parse
@@ -16,6 +17,7 @@ import logging as log
 from pathlib import Path
 
 # Variables
+user_agent = "othecat35/MCServer"
 terminal_size = os.get_terminal_size()
 
 default_configs = {
@@ -45,7 +47,9 @@ default_configs = {
 
 # Paths
 mcserver_dir = Path(".mcserver")
+
 configs_dir = mcserver_dir / "configs"
+tempfiles_dir = mcserver_dir / "tempfiles"
 
 # Color functions
 colors = {
@@ -107,7 +111,7 @@ def load_config(config_name):
 
 # Requests
 def request_get(url, params={}, headers={
-  "User-Agent": "othecat35/MCServer"
+  "User-Agent": user_agent
 }):
   query_string = f"?{urllib.parse.urlencode(params)}" if params else ""
   log.debug(f"Query string: {query_string}")
@@ -118,6 +122,17 @@ def request_get(url, params={}, headers={
   with urllib.request.urlopen(request_url) as response:
     return response.read().decode("utf-8")
 
+def request_download(url, filename, headers={
+  "User-Agent": user_agent
+}):
+  request_url = urllib.request.Request(f"{url}", headers=headers, method="GET")
+  log.debug(f"Request URL: {request_url.full_url}")
+
+  with urllib.request.urlopen(request_url) as response:
+    with open(tempfiles_dir / filename, mode="wb") as file:
+      shutil.copyfileobj(response, file)
+    shutil.move((tempfiles_dir / filename).resolve(), filename)
+
 # Command functions
 def initialize_directory(args):
   if not mcserver_dir.exists():
@@ -126,13 +141,26 @@ def initialize_directory(args):
     log.info(f"Reinitializing MCServer directory at {mcserver_dir.resolve()}")
 
   mcserver_dir.mkdir(exist_ok=True)
+
   configs_dir.mkdir(exist_ok=True)
+  tempfiles_dir.mkdir(exist_ok=True)
 
   for config in default_configs.keys():
     try:
       generate_config(config)
     except FileExistsError:
       log.debug(f"Configuration file for `{config}` already exists, not regenerating")
+
+def install_server(args):
+  server_config = load_config("server")
+  launcher_config = load_config("launcher")
+
+  server_software = server_config["software"]
+
+  if server_software["loader"] == "fabric":
+    request_download(f"https://meta.fabricmc.net/v2/versions/loader/{server_config['version']}/{server_software['version']}/1.1.1/server/jar", launcher_config["jarfile"])
+
+  log.info("Done?")
 
 def search_mod(args):
   query = " ".join(args.query)
@@ -275,22 +303,26 @@ def main():
   parser = argparse.ArgumentParser()
   subparsers = parser.add_subparsers(required=True)
 
-  # 'init' subcommand
+  # 'init' command
   parser_init = subparsers.add_parser("init", help="initialize MCServer directory")
   parser_init.set_defaults(func=initialize_directory)
 
-  # 'search' subcommand
+  # 'install' command
+  parser_install = subparsers.add_parser("install", help="Install the server")
+  parser_install.set_defaults(func=install_server)
+
+  # 'search' command
   parser_search = subparsers.add_parser("search", help="search mods from Modrinth")
   parser_search.add_argument("query", help="search query", nargs="+")
   parser_search.add_argument("--page", help="page number of the search results", type=int, default=1)
   parser_search.set_defaults(func=search_mod)
 
-  # 'show' subcommand
+  # 'show' command
   parser_show = subparsers.add_parser("show", help="Show more info about a mod")
   parser_show.add_argument("modid", help="slug/mod ID", nargs="+")
   parser_show.set_defaults(func=show_mod)
 
-  # 'start' subcommand
+  # 'start' command
   parser_start = subparsers.add_parser("start", help="start the server")
   parser_start.set_defaults(func=start_server)
 

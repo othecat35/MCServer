@@ -20,8 +20,15 @@ Added:
 # 1.2.0
 - Move java command options to a seperate launcher.json configuration
 
-# 1.2.1
+1.2.1
 - Renamed function color_string to color_text
 - Replace all raise error to Exception
 - Update "Showing ... out of ... mods ..." message to have pages count
 - Update mod_environment_color to use color_text
+
+1.3.1
+- Renamed "subcommand" to "command"
+- Added fucntion "request_download"
+- Added "install" command
+- Added new subdirectory "tempfiles"
+- Replace "User-Agent" with variable "user_agent"
